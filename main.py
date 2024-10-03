@@ -60,24 +60,24 @@ class EnglishMonths(str, Enum):
     DEC = "December"
 
 
-def to_english_format(date: date) -> str:
-    day_of_week = list(EnglishDaysOfWeek)[date.weekday()].value
-    month = list(EnglishMonths)[date.month].value
+def to_english_format(some_date: date) -> str:
+    day_of_week = list(EnglishDaysOfWeek)[some_date.weekday()].value
+    month = list(EnglishMonths)[some_date.month].value
     day_suffix = {
         1: "st",
         2: "nd",
         3: "rd",
-    }.get(date.day, "th")
-    return f"{day_of_week}, {month} {date.day}{day_suffix}"
+    }.get(some_date.day, "th")
+    return f"{day_of_week}, {month} {some_date.day}{day_suffix}"
 
 
-def to_french_format(date: date) -> str:
-    day_of_week = list(FrenchDaysOfWeek)[date.weekday()].value
-    month = list(FrenchMonths)[date.month].value
+def to_french_format(some_date: date) -> str:
+    day_of_week = list(FrenchDaysOfWeek)[some_date.weekday()].value
+    month = list(FrenchMonths)[some_date.month].value
     day_suffix = {
         1: "er",
-    }.get(date.day, "")
-    return f"{day_of_week} {date.day}{day_suffix} {month}"
+    }.get(some_date.day, "")
+    return f"{day_of_week} {some_date.day}{day_suffix} {month}"
 
 
 def generate_body_from_template(details: AppointmentDetails) -> str:
