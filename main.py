@@ -1,3 +1,4 @@
+import csv
 from datetime import date, time
 from email.generator import BytesGenerator
 from email.message import EmailMessage
@@ -10,11 +11,20 @@ from time_formatting import (
     french_date_format, french_time_format
 )
 
+FOLDER = "generated_mails"
+
 
 class AppointmentDetails(NamedTuple):
     date: date
     time: time
     room: str = "A203"
+
+
+class Student(NamedTuple):
+    login: str
+    meeting_date: date
+    meeting_time: time
+    mail_sent: bool
 
 
 def generate_body_from_template(details: AppointmentDetails) -> str:
@@ -28,8 +38,8 @@ def generate_body_from_template(details: AppointmentDetails) -> str:
     )
 
 
-def export_to_file(msg: EmailMessage):
-    with open("mail.eml", mode="wb") as output_fd:
+def export_mail_to_file(msg: EmailMessage, filename: str):
+    with Path(FOLDER, filename).open(mode="wb") as output_fd:
         (
             BytesGenerator(output_fd)
             .flatten(msg)
@@ -49,15 +59,36 @@ def create_mail_for_student(student_email_address: str, details: AppointmentDeta
     return msg
 
 
+def parse_csv(file: str) -> list[Student]:
+    with open(file, newline="") as f:
+        rows = csv.reader(f, delimiter=";")
+        _ = next(rows)  # skip first line (headers)
+        return [
+            Student(
+                login,
+                date.fromisoformat(meeting_date),
+                time.fromisoformat(meeting_time),
+                mail_sent == "TRUE",
+            )
+            for (login, _, _, _, meeting_date, meeting_time, mail_sent) in rows
+        ]
+
+
 def main():
-    msg = create_mail_for_student(
-        "mail@example.com",
-        AppointmentDetails(
-            date(2024, 10, 8),
-            time(18),
+    Path(FOLDER).mkdir(exist_ok=True)
+
+    students = parse_csv("Suivi A2.csv")
+
+    for student in filter(lambda s: not s.mail_sent, students):
+        msg = create_mail_for_student(
+            f"{student.login}@epita.fr",
+            AppointmentDetails(
+                student.meeting_date,
+                student.meeting_time,
+            )
         )
-    )
-    export_to_file(msg)
+
+        export_mail_to_file(msg, f"mail_to_{student.login}.eml")
 
 
 if __name__ == "__main__":
