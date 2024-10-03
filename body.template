@@ -1,0 +1,26 @@
+(English version below)
+--
+
+Bonjour,
+
+Je te donne rendez-vous ce {date_fr}, à {time_fr}, en salle {room}, pour un entretien de suivi.
+
+Cordialement,
+
+--
+John Smith
+Professeur d'algorithmique
+Professeur principal de la classe A2
+
+# English version #
+
+Hi,
+
+I'm assigning you an appointment with me on {date_en}, at {time_en}, in room {room} for a follow-up interview.
+
+Regards,
+
+--
+John Smith
+Algorithmics teacher
+Referent teacher for class A2
