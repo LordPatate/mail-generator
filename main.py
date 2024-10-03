@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import csv
 from datetime import date, time
 from email.generator import BytesGenerator
@@ -12,6 +13,8 @@ from time_formatting import (
 )
 
 FOLDER = "generated_mails"
+SENDER_EMAIL_ADDRESS = "mail@example.com"
+EMAIL_SUBJECT = "<Mail Subject>"
 
 
 class AppointmentDetails(NamedTuple):
@@ -49,9 +52,9 @@ def export_mail_to_file(msg: EmailMessage, filename: str):
 def create_mail_for_student(student_email_address: str, details: AppointmentDetails):
     msg = EmailMessage(policy=SMTP)
 
-    msg["from"] = "mail@example.com"
+    msg["from"] = SENDER_EMAIL_ADDRESS
     msg["to"] = student_email_address
-    msg["subject"] = "<Mail Subject>"
+    msg["subject"] = EMAIL_SUBJECT
 
     body = generate_body_from_template(details)
     msg.set_content(body)
@@ -74,10 +77,10 @@ def parse_csv(file: str) -> list[Student]:
         ]
 
 
-def main():
+def main(input_csv: str):
     Path(FOLDER).mkdir(exist_ok=True)
 
-    students = parse_csv("Suivi A2.csv")
+    students = parse_csv(input_csv)
 
     for student in filter(lambda s: not s.mail_sent, students):
         msg = create_mail_for_student(
@@ -92,4 +95,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser()
+    parser.add_argument("input_csv")
+    namespace = parser.parse_args()
+    main(namespace.input_csv)
