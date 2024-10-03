@@ -11,23 +11,23 @@ class AppointmentDetails(NamedTuple):
 
 
 class FrenchDaysOfWeek(str, Enum):
-    SUN = "Dimanche"
     MON = "Lundi"
     TUE = "Mardi"
     WED = "Mercredi"
     THU = "Jeudi"
     FRI = "Vendredi"
     SAT = "Samedi"
+    SUN = "Dimanche"
 
 
 class EnglishDaysOfWeek(str, Enum):
-    SUN = "Sunday"
     MON = "Monday"
     TUE = "Tuesday"
     WED = "Wednesday"
     THU = "Thursday"
     FRI = "Friday"
     SAT = "Saturday"
+    SUN = "Sunday"
 
 
 class FrenchMonths(str, Enum):
