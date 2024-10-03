@@ -36,20 +36,27 @@ def export_to_file(msg: EmailMessage):
         )
 
 
-def main():
-    student_email_address = "mail@example.com"
-    details = AppointmentDetails(
-        date=date(2024, 10, 8),
-        time=time(18),
-    )
-
+def create_mail_for_student(student_email_address: str, details: AppointmentDetails):
     msg = EmailMessage(policy=SMTP)
+
     msg["from"] = "mail@example.com"
     msg["to"] = student_email_address
     msg["subject"] = "<Mail Subject>"
+
     body = generate_body_from_template(details)
     msg.set_content(body)
 
+    return msg
+
+
+def main():
+    msg = create_mail_for_student(
+        "mail@example.com",
+        AppointmentDetails(
+            date(2024, 10, 8),
+            time(18),
+        )
+    )
     export_to_file(msg)
 
 
