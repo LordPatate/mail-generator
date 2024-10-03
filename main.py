@@ -62,7 +62,7 @@ class EnglishMonths(str, Enum):
 
 def to_english_format(some_date: date) -> str:
     day_of_week = list(EnglishDaysOfWeek)[some_date.weekday()].value
-    month = list(EnglishMonths)[some_date.month].value
+    month = list(EnglishMonths)[some_date.month + 1].value
     day_suffix = {
         1: "st",
         2: "nd",
@@ -73,7 +73,7 @@ def to_english_format(some_date: date) -> str:
 
 def to_french_format(some_date: date) -> str:
     day_of_week = list(FrenchDaysOfWeek)[some_date.weekday()].value
-    month = list(FrenchMonths)[some_date.month].value
+    month = list(FrenchMonths)[some_date.month + 1].value
     day_suffix = {
         1: "er",
     }.get(some_date.day, "")
