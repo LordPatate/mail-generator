@@ -60,7 +60,7 @@ class EnglishMonths(str, Enum):
     DEC = "December"
 
 
-def to_english_format(some_date: date) -> str:
+def english_date_format(some_date: date) -> str:
     day_of_week = list(EnglishDaysOfWeek)[some_date.weekday()].value
     month = list(EnglishMonths)[some_date.month + 1].value
     day_suffix = {
@@ -71,7 +71,7 @@ def to_english_format(some_date: date) -> str:
     return f"{day_of_week}, {month} {some_date.day}{day_suffix}"
 
 
-def to_french_format(some_date: date) -> str:
+def french_date_format(some_date: date) -> str:
     day_of_week = list(FrenchDaysOfWeek)[some_date.weekday()].value
     month = list(FrenchMonths)[some_date.month + 1].value
     day_suffix = {
@@ -80,13 +80,25 @@ def to_french_format(some_date: date) -> str:
     return f"{day_of_week} {some_date.day}{day_suffix} {month}"
 
 
+def french_time_format(some_time: time) -> str:
+    return some_time.strftime("%Hh%M")
+
+
+def english_time_format(some_time: time) -> str:
+    suffix = (
+        'p.m.' if some_time > time(13)
+        else "a.m."
+    )
+    return some_time.strftime(f"%I:%M {suffix}")
+
+
 def generate_body_from_template(details: AppointmentDetails) -> str:
     body_template = Path("body.template").read_text(encoding="utf-8")
     return body_template.format(
-        date_fr=to_french_format(details.date),
-        date_en=to_english_format(details.date),
-        time_fr=details.time.strftime("%Hh%M"),
-        time_en=details.time.strftime(f"%I:%M {'p.m.' if details.time > time(13) else 'a.m.'}"),
+        date_fr=french_date_format(details.date),
+        date_en=english_date_format(details.date),
+        time_fr=french_time_format(details.time),
+        time_en=english_time_format(details.time),
         room=details.room,
     )
 
