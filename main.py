@@ -12,8 +12,10 @@ from time_formatting import (
     french_date_format, french_time_format
 )
 
-FOLDER = "generated_mails"
+OUTPUT_FOLDER = "generated_mails"
+TEMPLATE_FILENAME = "body.template"
 SENDER_EMAIL_ADDRESS = "mail@example.com"
+STUDENT_MAIL_TEMPLATE = "{}@epita.fr"
 EMAIL_SUBJECT = "<Mail Subject>"
 
 
@@ -32,7 +34,7 @@ class Student(NamedTuple):
 
 
 def generate_body_from_template(details: AppointmentDetails) -> str:
-    body_template = Path("body.template").read_text(encoding="utf-8")
+    body_template = Path(TEMPLATE_FILENAME).read_text(encoding="utf-8")
     return body_template.format(
         date_fr=french_date_format(details.date),
         date_en=english_date_format(details.date),
@@ -43,7 +45,7 @@ def generate_body_from_template(details: AppointmentDetails) -> str:
 
 
 def export_mail_to_file(msg: EmailMessage, filename: str):
-    with Path(FOLDER, filename).open(mode="wb") as output_fd:
+    with Path(OUTPUT_FOLDER, filename).open(mode="wb") as output_fd:
         (
             BytesGenerator(output_fd)
             .flatten(msg)
@@ -82,13 +84,13 @@ def parse_csv(file: str) -> list[Student]:
 
 
 def main(input_csv: str):
-    Path(FOLDER).mkdir(exist_ok=True)
+    Path(OUTPUT_FOLDER).mkdir(exist_ok=True)
 
     students = parse_csv(input_csv)
 
     for student in filter(lambda s: not s.mail_sent, students):
         msg = create_mail_for_student(
-            f"{student.login}@epita.fr",
+            STUDENT_MAIL_TEMPLATE.format(student.login),
             AppointmentDetails(
                 student.meeting_date,
                 student.meeting_time,
