@@ -4,7 +4,9 @@ from datetime import date, time
 from email.generator import BytesGenerator
 from email.message import EmailMessage
 from email.policy import SMTP
+import functools
 from pathlib import Path
+import tomllib
 from typing import NamedTuple
 
 from time_formatting import (
@@ -14,9 +16,13 @@ from time_formatting import (
 
 OUTPUT_FOLDER = "generated_mails"
 TEMPLATE_FILENAME = "body.template"
-SENDER_EMAIL_ADDRESS = "mail@example.com"
-STUDENT_MAIL_TEMPLATE = "{}@epita.fr"
-EMAIL_SUBJECT = "<Mail Subject>"
+CONFIG_FILE = "config.toml"
+
+
+class Config(NamedTuple):
+    sender_email_address: str
+    student_mail_template: str
+    email_subject: str
 
 
 class AppointmentDetails(NamedTuple):
@@ -55,9 +61,9 @@ def export_mail_to_file(msg: EmailMessage, filename: str):
 def create_mail_for_student(student_email_address: str, details: AppointmentDetails):
     msg = EmailMessage(policy=SMTP)
 
-    msg["from"] = SENDER_EMAIL_ADDRESS
+    msg["from"] = conf().sender_email_address
     msg["to"] = student_email_address
-    msg["subject"] = EMAIL_SUBJECT
+    msg["subject"] = conf().email_subject
 
     body = generate_body_from_template(details)
     msg.set_content(body)
@@ -90,7 +96,7 @@ def main(input_csv: str):
 
     for student in filter(lambda s: not s.mail_sent, students):
         msg = create_mail_for_student(
-            STUDENT_MAIL_TEMPLATE.format(student.login),
+            conf().student_mail_template.format(student.login),
             AppointmentDetails(
                 student.meeting_date,
                 student.meeting_time,
@@ -101,8 +107,15 @@ def main(input_csv: str):
         export_mail_to_file(msg, f"mail_to_{student.login}.eml")
 
 
+@functools.cache
+def conf():
+    with Path(CONFIG_FILE).open(mode="rb") as fp:
+        conf_dict = tomllib.load(fp)
+        return Config(**conf_dict)
+
+
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("input_csv")
-    namespace = parser.parse_args()
-    main(namespace.input_csv)
+    args = parser.parse_args()
+    main(args.input_csv)

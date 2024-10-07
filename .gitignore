@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 
 generated_mails/
+config.toml
+body.template
