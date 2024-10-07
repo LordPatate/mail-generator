@@ -73,7 +73,9 @@ def parse_csv(file: str) -> list[Student]:
                 time.fromisoformat(meeting_time),
                 mail_sent == "TRUE",
             )
-            for (login, _, _, _, meeting_date, meeting_time, mail_sent) in rows
+            for (login, meeting_date, meeting_time, mail_sent) in (
+                row[:len(Student._fields)] for row in rows
+            )
         ]
 
 
