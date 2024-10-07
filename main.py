@@ -20,13 +20,14 @@ EMAIL_SUBJECT = "<Mail Subject>"
 class AppointmentDetails(NamedTuple):
     date: date
     time: time
-    room: str = "A203"
+    room: str
 
 
 class Student(NamedTuple):
     login: str
     meeting_date: date
     meeting_time: time
+    room: str
     mail_sent: bool
 
 
@@ -71,9 +72,10 @@ def parse_csv(file: str) -> list[Student]:
                 login,
                 date.fromisoformat(meeting_date),
                 time.fromisoformat(meeting_time),
+                room,
                 mail_sent == "TRUE",
             )
-            for (login, meeting_date, meeting_time, mail_sent) in (
+            for (login, meeting_date, meeting_time, room, mail_sent) in (
                 row[:len(Student._fields)] for row in rows
             )
         ]
@@ -90,6 +92,7 @@ def main(input_csv: str):
             AppointmentDetails(
                 student.meeting_date,
                 student.meeting_time,
+                student.room,
             )
         )
 
