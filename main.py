@@ -21,7 +21,7 @@ CONFIG_FILE = "config.toml"
 
 class Config(NamedTuple):
     sender_email_address: str
-    student_mail_template: str
+    student_address_template: str
     email_subject: str
 
 
@@ -96,7 +96,7 @@ def main(input_csv: str):
 
     for student in filter(lambda s: not s.mail_sent, students):
         msg = create_mail_for_student(
-            conf().student_mail_template.format(student.login),
+            conf().student_address_template.format(student.login),
             AppointmentDetails(
                 student.meeting_date,
                 student.meeting_time,
