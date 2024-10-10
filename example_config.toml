@@ -1,3 +1,9 @@
 sender_email_address = "mail@example.com"
 student_address_template = "{}@epita.fr"
 email_subject = "<Mail Subject>"
+
+[smtp]
+host = "<smtp host address>"
+port = 587
+user = "mail@example.com"
+password = "********"

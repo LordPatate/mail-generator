@@ -1,3 +1,5 @@
+import smtplib
+import ssl
 from argparse import ArgumentParser
 import csv
 from datetime import date, time
@@ -6,8 +8,9 @@ from email.message import EmailMessage
 from email.policy import SMTP
 import functools
 from pathlib import Path
+from textwrap import dedent
 import tomllib
-from typing import NamedTuple
+from typing import Callable, NamedTuple
 
 from time_formatting import (
     english_date_format, english_time_format,
@@ -20,9 +23,16 @@ CONFIG_FILE = "config.toml"
 
 
 class Config(NamedTuple):
+    class SMTPConfig(NamedTuple):
+        host: str
+        port: int
+        user: str
+        password: str
+
     sender_email_address: str
     student_address_template: str
     email_subject: str
+    smtp: SMTPConfig
 
 
 class AppointmentDetails(NamedTuple):
@@ -50,7 +60,10 @@ def generate_body_from_template(details: AppointmentDetails) -> str:
     )
 
 
-def export_mail_to_file(msg: EmailMessage, filename: str):
+def export_mail_to_file(msg: EmailMessage):
+    subject_summary = msg["subject"][:32]
+    dest, _ = msg["to"].split("@")
+    filename = f"{subject_summary} -- to {dest}.eml"
     with Path(OUTPUT_FOLDER, filename).open(mode="wb") as output_fd:
         (
             BytesGenerator(output_fd)
@@ -86,7 +99,19 @@ def parse_csv(file: str) -> list[Student]:
         ]
 
 
-def main(input_csv: str):
+def send_msg_using_ssl(msg: EmailMessage):
+    context = ssl.create_default_context()
+    smtp = conf().smtp
+    with smtplib.SMTP(smtp.host, smtp.port) as server:
+        server.starttls(context=context)
+        server.login(
+            smtp.user,
+            smtp.password,
+        )
+        server.send_message(msg)
+
+
+def main(input_csv: str, action_on_mail: Callable[[EmailMessage], None]):
     Path(OUTPUT_FOLDER).mkdir(exist_ok=True)
 
     students = parse_csv(input_csv)
@@ -102,18 +127,33 @@ def main(input_csv: str):
             )
         )
 
-        export_mail_to_file(msg, f"mail_to_{student.login}.eml")
+        action_on_mail(msg)
 
 
 @functools.cache
 def conf():
     with Path(CONFIG_FILE).open(mode="rb") as fp:
         conf_dict = tomllib.load(fp)
-        return Config(**conf_dict)
+        smtp_dict = conf_dict.pop("smtp")
+        return Config(**conf_dict, smtp=Config.SMTPConfig(**smtp_dict))
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("input_csv")
+    parser.add_argument(
+        "--mode",
+        choices=("CREATE", "SEND"),
+        help=dedent(
+            """\
+            The desired behavior for each mail.
+            Wether to CREATE a file or directly SEND the mail using SMTP."""
+        ),
+        default="CREATE",
+    )
     args = parser.parse_args()
-    main(args.input_csv)
+    action_map = {
+        "CREATE": export_mail_to_file,
+        "SEND": send_msg_using_ssl,
+    }
+    main(args.input_csv, action_map[args.mode])
