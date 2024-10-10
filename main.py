@@ -73,19 +73,16 @@ def create_mail_for_student(student_email_address: str, details: AppointmentDeta
 
 def parse_csv(file: str) -> list[Student]:
     with open(file, newline="") as f:
-        rows = csv.reader(f, delimiter=";")
-        _ = next(rows)  # skip first line (headers)
+        rows = csv.DictReader(f, delimiter=";")
         return [
             Student(
-                login,
-                date.fromisoformat(meeting_date),
-                time.fromisoformat(meeting_time),
-                room,
-                mail_sent == "TRUE",
+                row["login"],
+                date.fromisoformat(row["date"]),
+                time.fromisoformat(row["time"]),
+                row["room"],
+                row["mail_sent"] == "TRUE",
             )
-            for (login, meeting_date, meeting_time, room, mail_sent) in (
-                row[:len(Student._fields)] for row in rows
-            )
+            for row in rows
         ]
 
 
