@@ -92,8 +92,9 @@ def main(input_csv: str):
     students = parse_csv(input_csv)
 
     for student in filter(lambda s: not s.mail_sent, students):
+        student_email_address = conf().student_address_template.format(student.login)
         msg = create_mail_for_student(
-            conf().student_address_template.format(student.login),
+            student_email_address,
             AppointmentDetails(
                 student.meeting_date,
                 student.meeting_time,
