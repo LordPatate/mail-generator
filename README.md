@@ -18,8 +18,8 @@ The CSV file should have the following columns:
 | Header name  | Description                                                                                               | Example            |
 | ------------ | --------------------------------------------------------------------------------------------------------- | ------------------ |
 | login        | Used to build the email address                                                                           | firstname.lastname |
-| meeting_date | The meeting date (iso format)                                                                             | 2024-10-01         |
-| meeting_time | The meeting time (hh:mm)                                                                                  | 18:00              |
+| date | The meeting date (iso format)                                                                             | 2024-10-01         |
+| time | The meeting time (hh:mm)                                                                                  | 18:00              |
 | room         | The meeting room                                                                                          | A203               |
 | mail_sent    | Whether mail was already sent or not. The script will only generate or send mails if this column is FALSE | FALSE              |
 
