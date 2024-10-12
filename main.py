@@ -22,17 +22,18 @@ TEMPLATE_FILENAME = "body.template"
 CONFIG_FILE = "config.toml"
 
 
-class Config(NamedTuple):
-    class SMTPConfig(NamedTuple):
-        host: str
-        port: int
-        user: str
-        password: str
+class SMTPConfig(NamedTuple):
+    host: str
+    port: int
+    user: str
+    password: str
 
+
+class Config(NamedTuple):
     sender_email_address: str
     student_address_template: str
     email_subject: str
-    smtp: SMTPConfig
+    smtp: SMTPConfig | None
 
 
 class AppointmentDetails(NamedTuple):
@@ -102,6 +103,8 @@ def parse_csv(file: str) -> list[Student]:
 def send_msg_using_ssl(msg: EmailMessage):
     context = ssl.create_default_context()
     smtp = conf().smtp
+    if smtp is None:
+        raise KeyError("An [smtp] configuration is required to send e-mails.")
     with smtplib.SMTP(smtp.host, smtp.port) as server:
         server.starttls(context=context)
         server.login(
@@ -134,8 +137,11 @@ def main(input_csv: str, action_on_mail: Callable[[EmailMessage], None]):
 def conf():
     with Path(CONFIG_FILE).open(mode="rb") as fp:
         conf_dict = tomllib.load(fp)
-        smtp_dict = conf_dict.pop("smtp")
-        return Config(**conf_dict, smtp=Config.SMTPConfig(**smtp_dict))
+        smtp = None
+        if "smtp" in conf_dict:
+            smtp_dict = conf_dict.pop("smtp")
+            smtp = SMTPConfig(**smtp_dict)
+        return Config(**conf_dict, smtp=smtp)
 
 
 if __name__ == "__main__":
