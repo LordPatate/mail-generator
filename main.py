@@ -119,7 +119,14 @@ def main(input_csv: str, action_on_mail: Callable[[EmailMessage], None]):
 
     students = parse_csv(input_csv)
 
-    for student in filter(lambda s: not s.mail_sent, students):
+    def select_student(s: Student):
+        return (
+            (not s.mail_sent)
+            and (s.meeting_date - date.today()).days <= 7
+        )
+    filtered_students = filter(select_student, students)
+
+    for student in filtered_students:
         student_email_address = conf().student_address_template.format(student.login)
         msg = create_mail_for_student(
             student_email_address,
